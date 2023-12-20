@@ -1,6 +1,6 @@
 #include <LiquidCrystal.h>
 
-#include "notes.h"
+#include "pitches.h"
 
 #include <LedControl.h>
 
