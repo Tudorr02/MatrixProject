@@ -22,4 +22,7 @@
 8. **Power Management and Configuration Settings**: Included in the game for optimal performance.
 
    ## Photo
-<img src="https://github.com/Tudorr02/MatrixProject/assets/92024989/fb9fa62b-bd99-4d56-a800-50f1c4d4c7b9" width="1000" height="500">
+<img src="https://github.com/Tudorr02/MatrixProject/assets/92024989/fb9fa62b-bd99-4d56-a800-50f1c4d4c7b9" width="900" height="500">
+
+ ## Video
+ https://youtu.be/tBP2JJA66c8
