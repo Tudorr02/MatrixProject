@@ -1,4 +1,3 @@
-
 # Impossible Road Game ☠️
 
 ## Description
