@@ -72,6 +72,6 @@
 ## About 
 
 <img src="https://media.giphy.com/media/XYlK99u8oOGic/giphy.gif" width="100" height="100" />
-At its core, "Impossible Road" is born out of a passion for matrix manipulation and a desire to push the boundaries of my coding skills. This game reflects a personal challenge I set for myself - to create an engaging, compact shooter game that's both fun and intellectually stimulating.
-
-Here is a presentation video : https://youtu.be/tBP2JJA66c8
+   At its core, "Impossible Road" is born out of a passion for matrix manipulation and a desire to push the boundaries of my coding skills. This game reflects a personal challenge I set for myself - to create an engaging, compact shooter game that's both fun and intellectually stimulating.<br>
+<br>
+➤ Here is a presentation video : https://youtu.be/tBP2JJA66c8
