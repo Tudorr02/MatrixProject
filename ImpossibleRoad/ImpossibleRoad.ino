@@ -16,9 +16,9 @@ const byte d6 = 5;
 const byte d7 = 4;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
-const byte dinPin = 12; // pin 12 is connected to the MAX7219 pin 1
-const byte clockPin = 11; // pin 11 is connected to the CLK pin 13
-const byte loadPin = 10; // pin 10 is connected to LOAD pin 12
+const byte dinPin = 12; // Pin 12 is connected to the MAX7219 pin 1
+const byte clockPin = 11; // Pin 11 is connected to the CLK pin 13
+const byte loadPin = 10; // Pin 10 is connected to LOAD pin 12
 
 LedControl lc = LedControl(dinPin, clockPin, loadPin, 1);
 
@@ -38,15 +38,17 @@ byte brightnessSteps = 7;
 const byte matrixBrightnessAddr = 60;
 byte matrixBrightnessVal = 0;
 
-//sount pin buzzer -> Analog
-const byte soundPin = A2;
+//Sound configuration
+const byte soundPin = A2; // Sound output pin
 const int volume = 200;
+// Frequencies for different sounds
 const int gotkeyFreq = 698;
 const int menuFreq = 93;
 const int gameFreq = 14;
 const int introFreq = 1700;
 const int introFreq2 = 1519;
 
+// Introductory text displayed on the LCD
 const char introText[16] = "Impossible Road";
 
 // Custom LCD character for the game
@@ -122,6 +124,7 @@ byte arrowCharacter[] = {
   B00100
 };
 
+// LCD dimensions
 const byte lcdRowSize = 2;
 const byte lcdColSize = 16;
 
@@ -145,10 +148,15 @@ const int debounceDelay = 200;
 unsigned long lastDebounce = 0;
 bool pressed = false;
 
+// EEPROM data for game levels,
+// If the player gets the minimum keys in the 1st level then 2nd level unlocks and so on, 
+// If the player changes the nickname , the levels 2 and 3 becomes locked again ( means that a new player will play the game  / a new profile is generated)
 const int level2LockedAddr = 700;
 const int level3LockedAddr = 750;
 bool level2Locked = true;
 bool level3Locked = true;
+
+// Start menu text
 const char * startOptionsMessage[] = {
   "     Level 1",
   "     Level 2",
@@ -158,7 +166,7 @@ const char * startOptionsMessage[] = {
 
 };
 
-// Menu text 
+// Parent Menu text 
 const char * parentOptionsMessage[] = {
   "  Start Game ",
   "  High Score ",
@@ -168,8 +176,9 @@ const char * parentOptionsMessage[] = {
   " "
 };
 
-char soundsMsg[] = "  Sounds [OFF] ";
-char alertLedMsg[] = "  AlertKey [OFF] ";
+//Settings text
+char soundsMsg[] = "  Sounds [OFF] "; // [OFF] <-> [ON]
+char alertLedMsg[] = "  AlertKey [OFF] "; //  [OFF] <-> [ON]
 const char * settingsOptionsMessage[] = {
   "  Enter Name",
   "  LCD Brightness",
@@ -181,21 +190,23 @@ const char * settingsOptionsMessage[] = {
   " "
 };
 
+//About Text
 const char aboutMessage[] = "Impossible Road | Author: Ilie Octavian Tudor | Github: Tudorr02";
 
-byte selectedOption = 0; //the option that is selected by user on menu
-byte arrayComponents = 0; // the number of menu options
-byte pointerRow = 0; // the user cursor
-byte submenuPointerRow = 0; // the user cursor, used in submenus
+// Variables for menu navigation
+byte selectedOption = 0; // Currently selected menu option
+byte arrayComponents = 0; // Number of components in the current menu array
+byte pointerRow = 0; // The user cursor
+byte submenuPointerRow = 0; // The user cursor, used in submenus
 int state = 0;
-// state=0 => cycle though Main menu
-// state=-1 => block infinite main menu printing
-// state=2 => call menu option's functions 
+// state=0 => Cycle though Main menu
+// state=-1 => Block infinite main menu printing
+// state=2 => Call menu option's functions 
 
 enum menuOptions {
   START = 10, LVL1, LVL2, LVL3, S_EXIT,
     HIGHSCORE = 20,
-    SETTINGS = 30, ENTERNAME, LCD_BRIGHTNESS, MATRIX_BRIGHTNESS, SOUNDS, ALERTS, RESETHIGHSCORE,EXIT,
+    SETTINGS = 30, ENTERNAME, LCD_BRIGHTNESS, MATRIX_BRIGHTNESS, SOUNDS, ALERTS, RESETHIGHSCORE, EXIT,
     ABOUT = 40,
     HOWTOPLAY = 50
 };
@@ -205,21 +216,21 @@ bool printLock = false;
 
 struct level {
 
-  byte numberOfWalls;
+  byte numberOfWalls; // Number of walls in the level
 
   byte NoEnemies;
-  int minAttackDelay;
-  int maxAttackDelay;
-  byte minAttackArea;
-  byte maxAttackArea;
+  int minAttackDelay; // Minimum delay for enemies shooting
+  int maxAttackDelay; // Maximum delay for enemies shooting
+  byte minAttackArea; // The minimum number of ( bullet ) dots per attack
+  byte maxAttackArea; //  The minimum number of ( bullet ) dots per attack
 
   byte lives;
-  byte maxPoints; // available points in the map
-  byte minPoints; // minimum points you need to have to be able to unlock the next level
+  byte maxPoints; // Available points in the map
+  byte minPoints; // Minimum points you need to have to be able to unlock the next level
 };
 
-const byte distanceBetweenEnemies = 2;
-byte gameLevel = 0;
+const byte distanceBetweenEnemies = 2; // Distance between enemies for spawn validation
+byte gameLevel = 0; // Current game level
 const byte NoLevels = 3;
 level gameLevels[NoLevels] = {
   { //first level
@@ -261,17 +272,18 @@ struct enemy {
 
   byte xPos;
   byte yPos;
-  byte attackArea;
-  byte bulletArea;
-  int attackDelay;
-  unsigned long lastAttack = 0;
-  unsigned long lastBlink = 0;
+  byte attackArea; // The number of bullets per attack
+  byte bulletArea; // The current bullet 
+  int attackDelay; // Delay between attacks
+  unsigned long lastAttack = 0; //  Last time the enemy attacked
+  unsigned long lastBlink = 0; // // Last time the enemy blinked
 };
 
+// Dynamic array for storing enemies
 enemy * enemies;
 
-const byte mapSize = 16;
-byte gameMap[mapSize][mapSize] = {};
+const byte mapSize = 16; // Size of the game map
+byte gameMap[mapSize][mapSize] = {}; // Game map array
 
 enum components {
   EMPTY,
@@ -282,45 +294,57 @@ enum components {
   PLAYER
 };
 
-const int enemyBlinkDelay = 100;
-const byte playerNameLength = 6;
+const int enemyBlinkDelay = 100; // Delay between enemy blinks
+
+const byte playerNameLength = 6; // Maximum length of the player's name
+char pName[playerNameLength] = "_____"; // The initial text when trying to type a new nickname
+byte letterIndex = 0; // Used to track the position of the cursor when trying to type the nickname
 
 struct Player {
   byte xPos;
   byte yPos;
   bool hasPressed;
   byte lives;
-  byte keys;
+  byte keys; // Number of keys collected
   byte score;
   char name[playerNameLength];
-  components futureComponent;
+  components futureComponent; // Component that the player will move onto
 
   /// viewLUx,viewLUy  
   /// ................  
   /// ... matrix.....
   ///.................
   /// ................
-  byte viewLUx, viewLUy;
+  byte viewLUx, viewLUy; // used for getting the first point of the  matrix in which player is randomly spawned ( take in consideration that we have a 16x16 map and we print a portion of it into a 8x8 matrix)
+  //
+  // 0,0 -> 1 st matrix
+  // 0,8 -> 2 nd matrix
+  // 8,0 -> 3 rd matrix 
+  // 8,8 -> 4 th matrix
 };
 
 Player * player;
-byte viewSize = 8;
 
-bool gameStarted = 0;
-unsigned long lastUpdate = 0;
-byte attacked = false;
+byte viewSize = 8; // Size of the viewable area in the LED 8x8 matrix
 
+bool gameStarted = 0; // Flag to indicate if the game has started 
+unsigned long lastUpdate = 0; // Time of the last printed stats on lcd
+byte attacked = false; // Flag to indicate if the player was attacked
+
+// If the button press exceeds this delay then :
+// 1. if the player has collected the minimum required keys , then the level will be passed
+// 2. if the player has not collected enough keys , then the level will be taken as lost and he won t be able to access future levels
+// In both cases the game will be ended , and the player will be able to cycle through the menu options 
 const unsigned long longPressedDelay = 2000;
-unsigned long pressStartTime = 0;
-
-char pName[playerNameLength] = "_____";
+unsigned long pressStartTime = 0; // Store the timestamp when the button was initially pressed.
 
 struct HighScore {
   byte score;
   char playerName[playerNameLength];
-  int addr;
+  int addr; // EEPROM address for storing this high score
 };
 
+// Array for storing top 3 high scores , saved in EEPROM
 HighScore highscore[3] = {
   {
     0,
@@ -339,35 +363,43 @@ HighScore highscore[3] = {
   }
 };
 
+// Temporary high score for the current player
+// This highscore will be restored when the player's nickname will be changed
 HighScore tempHighScore = {
   0,
   "",
   150
 };
 
+//This variable represents the current index in the high score list.
+// It can be used to track which high score entry is currently being displayed or updated.
 byte highscoreIndex = 0;
 
-byte letterIndex = 0;
-
+// Sounds status saves in EEPROM
+// sounds=1 -> sounds ON
+// sounds=0 -> sounds OFF
 byte soundsAddr = 400;
 byte sounds = 0;
 
+// Alert LED variables
 const byte ledPin = A3;
 const byte blinkDelayLED = 500;
 unsigned long lastBlink = 0;
 byte ledState = LOW;
-const byte alertArea = 1;
+const byte alertArea = 1; // Trigger alert area 
 byte alertsLed = 0;
 const int alertsLedAddr = 500;
 
+//Delay before triggering a reset if the map is not generated
 const int resetErrorDelay = 5000;
 
-unsigned long previousMillis = 0;
-const int noteDuration = 200; // example duration in milliseconds
-int melodyIndex = 0;
+unsigned long previousMillis = 0; // Used for non-blocking melody playing
+const int noteDuration = 200; // Duration of each note in the melody
+int melodyIndex = 0; // Index of the current note in the melody array
 
-byte playerHsPlace = 5;
+byte playerHsPlace = 5; // Decides if the player has beaten a highscore position 
 
+// Array of notes for the melody
 int melody[] = {
   NOTE_E7,
   NOTE_E7,
@@ -388,24 +420,28 @@ int melody[] = {
   // ... More notes ...
 };
 
+//This character array contains instructions or information on how to play the game.
 char howToPlayMsg[] = "Navigate through a maze-like map. Avoid enemies that move and attack. Collect keys scattered across the map. Unlock and advance through levels.";
-int txtLine = 0;
+int txtLine = 0; // Index of the current text line in the scrolling text
+
 void setup() {
 
-  randomSeed(analogRead(A5));
- 
+  randomSeed(analogRead(A5)); // Initializes the random number generator 
+
   Serial.begin(9600);
   getEEPROMVals();
-   matrixConfiguration();
+  matrixConfiguration();
   setLCDBrightness(lcdBrightnessVal);
-  // set up the LCD's number of columns and rows:
 
+  // set up the LCD's number of columns and rows:
   lcd.begin(lcdColSize, lcdRowSize);
+
   pinMode(ledPin, OUTPUT);
   pinMode(xPin, INPUT);
   pinMode(yPin, INPUT);
   pinMode(swPin, INPUT_PULLUP);
   pinMode(lcdBPin, OUTPUT);
+
   attachInterrupt(digitalPinToInterrupt(swPin), buttonPressed, FALLING);
   setCustomCharacters();
   introMessage();
@@ -418,18 +454,23 @@ void loop() {
 }
 
 void playSong() {
-  playNoteNonBlocking(melody[melodyIndex]);
+  // Function to play a song using the melody array
+  playNoteNonBlocking(melody[melodyIndex]); // Play the current note
 }
 
 void playNoteNonBlocking(int note) {
   unsigned long currentMillis = millis();
 
+  // Check if it's time to play the next note
   if (currentMillis - previousMillis >= noteDuration) {
+    // Update the previousMillis variable to the current time
     previousMillis = currentMillis;
 
+    // Check if there are more notes in the melody to play
     if (melodyIndex < sizeof(melody) / sizeof(int)) {
       // Play the next note
       tone(soundPin, melody[melodyIndex], noteDuration);
+      // Move to the next note in the melody array
       melodyIndex++;
     } else {
       // Reset the melody
@@ -438,32 +479,35 @@ void playNoteNonBlocking(int note) {
     }
   }
 }
-void( * resetFunc)(void) = 0;
-void printEEPROMValues() {
-  int eepromSize = EEPROM.length(); // Get the total number of bytes in the EEPROM
-  byte value;
-  for (int i = 100; i < 200; i++) {
-    EEPROM.get(i, value); // Read each byte of the EEPROM
+void( * resetFunc)(void) = 0; // Function pointer for resetting the Arduino
 
-    Serial.print("Address ");
-    Serial.print(i);
-    Serial.print(": ");
-    Serial.println(value); // Print the value in hexadecimal
-  }
+// void printEEPROMValues() {
+//   int eepromSize = EEPROM.length(); // Get the total number of bytes in the EEPROM
+//   byte value;
+//   for (int i = 100; i < 200; i++) {
+//     EEPROM.get(i, value); // Read each byte of the EEPROM
 
-}
+//     Serial.print("Address ");
+//     Serial.print(i);
+//     Serial.print(": ");
+//     Serial.println(value); // Print the value in hexadecimal
+//   }
+
+// }
 
 void updateLevel() {
-  updateView();
-  readPlayerMove();
-  updateComponents();
-  updateStats();
-  menuSound();
-  AlertKey(alertArea);
+  // Updates the current level, handling player movement and game state.
+  updateView(); // Updates the LED matrix view
+  readPlayerMove(); // Handles player's movement
+  updateComponents(); // Updates enemies and other game components
+  updateStats(); // Updates the player's stats
+  menuSound(); // Handles sound effects
+  AlertKey(alertArea); // Handles alert LED functionality
 
 }
 
 void printMap() {
+  // Prints the current game map to the serial monitor. Useful for debugging.
   Serial.println("-----------------------------------");
   for (int i = 0; i < 16; i++) {
     Serial.println();
@@ -474,13 +518,15 @@ void printMap() {
 }
 
 void writeHighScoreToEEPROM(HighScore & hs) {
+  // Writes a high score to EEPROM.
   EEPROM.put(hs.addr, hs);
 
 }
 
 void AlertKey(byte area) {
-
+  // Alerts the player with an LED blink when near a point in the game.
   if (alertsLed) {
+    // Checks for points near the player and blinks the LED
     for (int i = (player -> xPos - area); i <= player -> xPos + area; i++) {
       for (int j = (player -> yPos - area); j <= player -> yPos + area; j++)
         if (gameMap[i][j] == POINT) {
@@ -493,7 +539,7 @@ void AlertKey(byte area) {
 }
 
 void ledBlink(int delay) {
-
+  // Function to blink an LED with a specified delay.
   digitalWrite(ledPin, ledState);
   if (millis() - lastBlink > blinkDelayLED) {
     ledState = !ledState;
@@ -502,7 +548,7 @@ void ledBlink(int delay) {
 }
 
 void getHighScores() {
-
+  // Retrieves high scores from EEPROM.
   for (int i = 0; i < 3; i++) {
     EEPROM.get(highscore[i].addr, highscore[i]);
     //Serial.println(highscore[i].playerName);
@@ -511,7 +557,7 @@ void getHighScores() {
 }
 
 void updateView() {
-
+  // Updates the LED matrix to show the current view of the game map.
   for (int row = 0; row < viewSize; row++) {
     for (int col = 0; col < viewSize; col++) {
       lc.setLed(0, row, col, gameMap[player -> viewLUx + row][player -> viewLUy + col]);
@@ -521,7 +567,7 @@ void updateView() {
 }
 
 void updateComponents() {
-
+  // Updates game components like enemies
   for (int i = 0; i < gameLevels[gameLevel].NoEnemies; i++) {
     enemyBlinkAnimtion(enemies[i]);
     enemyAttackAnimation(enemies[i]);
@@ -529,6 +575,7 @@ void updateComponents() {
 }
 
 void generatePoints() {
+  // Generates keys (objectives) on the game map.
   byte xPos;
   byte yPos;
 
@@ -541,6 +588,7 @@ void generatePoints() {
       xPos = random(0, mapSize);
       yPos = random(0, mapSize);
 
+      // Randomly places points on the map, avoiding the player and enemies
       if (gameMap[xPos][yPos] != PLAYER && notInEnemyArea(xPos, yPos) && gameMap[xPos][yPos] == EMPTY) {
         gameMap[xPos][yPos] = POINT;
         search = false;
@@ -556,13 +604,14 @@ void generatePoints() {
 }
 
 void spawnPlayer() {
-
+  // Spawns the player at a random location on the map.
   bool search = true;
   while (search) {
 
     byte xSpawnPos = random(0, mapSize);
     byte ySpawnPos = random(0, mapSize);
 
+    // Randomly selects a spawn location for the player, avoiding enemies
     if (notInEnemyArea(xSpawnPos, ySpawnPos) && gameMap[xSpawnPos][ySpawnPos] == EMPTY) {
 
       player -> xPos = xSpawnPos;
@@ -631,7 +680,7 @@ void getView(Player * p) {
 }
 
 bool notInEnemyArea2(byte row, byte col, byte distance, byte index) {
-
+  // Function to check if a position is not within a certain distance of existing enemies.
   for (int i = 0; i < index; i++) {
     //up area
     if (row <= enemies[i].xPos && row >= enemies[i].xPos - distance && col == enemies[i].yPos)
@@ -675,7 +724,7 @@ bool notInEnemyArea2(byte row, byte col, byte distance, byte index) {
 }
 
 bool notInEnemyArea(byte row, byte col) {
-
+  // Function to check if a position is not in the attack area of any enemy.
   for (int i = 0; i < gameLevels[gameLevel].NoEnemies; i++) {
 
     //up area
@@ -705,7 +754,8 @@ bool notInEnemyArea(byte row, byte col) {
 }
 
 void generateGameMap(byte number) {
-
+  // Generates the game map for a given level.
+  // Generates walls, enemies, spawns player, and places points based on level configuration.
   generateWalls(gameLevels[number].numberOfWalls);
   generateEnemies(gameLevels[number].NoEnemies, gameLevels[number].minAttackDelay, gameLevels[number].maxAttackDelay, gameLevels[number].minAttackArea, gameLevels[number].maxAttackArea);
   spawnPlayer();
@@ -714,9 +764,8 @@ void generateGameMap(byte number) {
 }
 
 void generateWalls(byte numberOfWalls) {
-
+  // Randomly places walls on the map, ensuring they don't overlap or block paths excessively.
   unsigned long startGenerate = millis();
-  // generate a map using an occupanyRate as paramete
   while (numberOfWalls > 0) {
     byte xWall = random(mapSize);
     byte yWall = random(mapSize);
@@ -744,7 +793,7 @@ void generateWalls(byte numberOfWalls) {
 }
 
 void updateHighScore() {
-
+  // Compares the player's current score to the stored high scores and updates if necessary.
   for (int i = 0; i < 3; i++) {
     if (player -> score >= highscore[i].score) {
       playerHsPlace = i + 1;
@@ -768,7 +817,8 @@ void updateHighScore() {
 }
 
 bool isNotWallArea(byte startX, byte startY) {
-
+  // Checks if the given area does not have any walls.
+  // Ensures that the specified area is free of walls and can be used for placing game elements.
   byte x = startX;
   byte y = startY;
 
@@ -786,6 +836,7 @@ bool isNotWallArea(byte startX, byte startY) {
 }
 
 void levelWon() {
+  // Displays a message, updates high scores, and resets the game state.
   lcd.clear();
   lcd.home();
   lcd.print(F("   LEVEL PASSED  "));
@@ -836,6 +887,7 @@ void levelWon() {
       gameStarted = false;
       endGame();
       playerHsPlace = 5;
+
       setParentOption();
 
       return;
@@ -845,6 +897,8 @@ void levelWon() {
 }
 
 void readPlayerMove() {
+  // Reads and processes the player's movement.
+  // Interprets joystick input to move the player and updates the game state accordingly.
   joystickDirection move = joystickControl();
 
   digitalWrite(ledPin, LOW);
@@ -917,7 +971,8 @@ void readPlayerMove() {
 }
 
 void liveCameraMove(joystickDirection direction) {
-
+  // Updates the LED matrix to follow the player's movement.
+  // Adjusts the portion of the map displayed on the LED matrix based on player movement.
   Serial.print(" X: ");
   Serial.print(player -> xPos);
   Serial.print(" Y: ");
@@ -948,17 +1003,14 @@ void liveCameraMove(joystickDirection direction) {
       player -> viewLUx++;
   }
   break;
-  case PRESS: {
-    //comming soon
-  }
-  break;
+
   default: {}
   }
 
 }
 
-// free memory
 void endGame() {
+  // Frees allocated memory, resets the game map, and resets game variables.
   free(enemies);
   free(player);
   for (int i = 0; i < 16; i++)
@@ -968,7 +1020,7 @@ void endGame() {
 }
 
 void setLevel(byte number) {
-
+  // Initializes player stats, generates the game map, and sets up the level.
   initializeStats(number);
   generateGameMap(number);
 
@@ -978,7 +1030,7 @@ void setLevel(byte number) {
 }
 
 void initializeStats(byte number) {
-
+  // Sets initial values for the player's lives, score, and other stats.
   player = (Player * ) malloc(sizeof(Player));
   player -> keys = 0;
   player -> lives = gameLevels[gameLevel].lives;
@@ -993,6 +1045,8 @@ void initializeStats(byte number) {
 }
 
 void printStats(byte keys, byte lives, byte score, byte minimumKeys, byte level) {
+  // Prints the current game stats on the LCD.
+  // Displays player's current keys, lives, score, and other relevant information.
   lcd.clear();
 
   lcd.home();
@@ -1024,7 +1078,7 @@ void printStats(byte keys, byte lives, byte score, byte minimumKeys, byte level)
 }
 
 void updateStats() {
-
+  // Adjusts player's stats like keys and lives based on game interactions and events.
   if (player -> futureComponent == POINT) {
     Serial.print("Got a key");
 
@@ -1037,24 +1091,13 @@ void updateStats() {
 
   }
 
-  // developed in enemyShot method
-  // if(player->futureComponent==ENEMY || player->futureComponent==BULLET){
-  //   Serial.print("Attack -1");
-  //   if(millis()-lastUpdate>moveJoystickDelay){
-
-  //      player->lives--;
-  //     printStats(player->keys,player->lives,player->score,gameLevels[gameLevel].minPoints, gameLevel+1);
-  //     lastUpdate=millis();
-  //   }
-
-  // } 
-
   if (player -> lives == 0)
     levelLost();
 
 }
 
 void levelLost() {
+  // Displays a message and resets the game state.
   lcd.clear();
   lcd.home();
   lcd.print(F("   LEVEL LOST  "));
@@ -1071,7 +1114,8 @@ void levelLost() {
 }
 
 void generateEnemies(byte number, int minDelay, int maxDelay, byte minArea, byte maxArea) {
-  //enemy has value 2 on the map
+  // Generates enemy characters on the game map.
+  // Places a specified number of enemies on the map with given attack characteristics.
   enemies = (enemy * ) malloc(number * sizeof(enemy));
   Serial.print("ENEMIES: ");
   Serial.println(number);
@@ -1130,7 +1174,9 @@ void generateEnemies(byte number, int minDelay, int maxDelay, byte minArea, byte
 }
 
 void enemyAttackAnimation(enemy & _enemy) {
+  // Handles the attack animation of enemies.
 
+  // Check if the enemy is currently attacking (bulletArea is non-zero)
   if (_enemy.bulletArea != 0) {
 
     //Up
@@ -1151,12 +1197,16 @@ void enemyAttackAnimation(enemy & _enemy) {
     }
   }
 
+  // Check if it's time for the enemy to attack again based on the attack delay
   if (millis() - _enemy.lastAttack > _enemy.attackDelay) {
 
-    _enemy.bulletArea++;
+    _enemy.bulletArea++; // Increase the bullet area for the next attack
+
+    // Reset attack if bullet area exceeds the maximum attack area
     if (_enemy.bulletArea > _enemy.attackArea) {
 
-      //CLEARING
+      // Clear the bullets from the map for each direction
+
       for (int i = 0; i <= _enemy.attackArea; i++) {
         if (_enemy.xPos - i >= 0 && enemyAttack(_enemy.xPos - i, _enemy.yPos)) {
           gameMap[_enemy.xPos - i][_enemy.yPos] = EMPTY;
@@ -1174,17 +1224,18 @@ void enemyAttackAnimation(enemy & _enemy) {
           gameMap[_enemy.xPos][_enemy.yPos + i] = EMPTY;
         }
       }
-      attacked = false;
-      _enemy.bulletArea = 0;
+      attacked = false; // Reset attacked status
+      _enemy.bulletArea = 0; // Reset bullet area for next attack
 
     }
 
-    _enemy.lastAttack = millis();
+    _enemy.lastAttack = millis(); // Update the time of the last attack
   }
 
 }
 
 bool enemyAttack(byte row, byte col) {
+  // Checks if an enemy can attack a position without hitting a player or point.
 
   if (gameMap[row][col] != PLAYER && gameMap[row][col] != POINT) {
     return true;
@@ -1194,6 +1245,9 @@ bool enemyAttack(byte row, byte col) {
 }
 
 bool enemyShoot(byte row, byte col) {
+  // Determines if an enemy can shoot at a given position.
+  // Checks if an enemy's shot would hit the player or a free space.
+
   if (gameMap[row][col] == PLAYER) {
     if (attacked == false) {
       player -> lives--;
@@ -1223,12 +1277,13 @@ void blink(byte row, byte col, unsigned long & last, int delay, components state
 }
 
 void enemyBlinkAnimtion(enemy & _enemy) {
+  // Handles the blinking animation of enemies.
+  // Toggles the display of an enemy on the game map to create a blinking effect.
   blink(_enemy.xPos, _enemy.yPos, _enemy.lastBlink, enemyBlinkDelay, ENEMY, EMPTY);
 }
 
 void introMessage() {
   // Displaying intro text and a loading-like animation on LCD
-
   lcd.clear();
   lcd.home();
   lcd.print(introText);
@@ -1278,6 +1333,7 @@ joystickDirection joystickControl() {
 }
 
 void displayScrollingText(char * text) {
+  // Displays scrolling text on the LCD, used for longer messages.
   int textLength = strlen(text);
   int totalLines = (textLength / 16) + 1;
 
@@ -1682,15 +1738,14 @@ void startGameMenu() {
 }
 
 void Menu() {
-  // General menu handling function
-  // Main menu handling logic, calling relevant functions based on state
+  // Main function to handle the game menu interactions and state changes
   if (state == 2) {
-
+    // Switch statement to handle different menu options based on user selection
     switch (selectedOption) {
 
     case LVL1: {
       if (!gameStarted) {
-        printLock=false;
+        printLock = false;
         gameStarted = true;
         setLevel(gameLevel = 0);
       }
@@ -1706,7 +1761,7 @@ void Menu() {
       } else {
         if (!gameStarted) {
           gameStarted = true;
-          printLock=false;
+          printLock = false;
           setLevel(gameLevel = 1);
         }
 
@@ -1718,17 +1773,18 @@ void Menu() {
 
     case ENTERNAME:
       enterNameMenu();
-    break;
+      break;
 
-    case RESETHIGHSCORE: resetHighScore();
-    break;
+    case RESETHIGHSCORE:
+      resetHighScore();
+      break;
 
     case LVL3: {
       if (level3Locked == true) {
         selectedOption = START;
       } else {
         if (!gameStarted) {
-          printLock=false;
+          printLock = false;
           gameStarted = true;
           setLevel(gameLevel = 2);
         }
@@ -1800,14 +1856,15 @@ void Menu() {
     }
 
   } else {
-
+    // Handle the initial state of the menu
     if (state == 0) {
       selectedOption = 0;
-      menuPrint(pointerRow, parentOptionsMessage);
+      menuPrint(pointerRow, parentOptionsMessage); // Print the main menu
       state = -1;
       arrayComponents = sizeof(parentOptionsMessage) / sizeof(parentOptionsMessage[0]);
     }
 
+    // Handle joystick movements for menu navigation
     if (millis() - lastMove > moveJoystickDelay) {
       updateMenuPrint(pointerRow, arrayComponents);
       menuSound();
@@ -1819,6 +1876,7 @@ void Menu() {
 }
 
 void soundsToggle() {
+  // Toggle sound settings and save the preference in EEPROM
   sounds = !sounds;
   EEPROM.put(soundsAddr, sounds);
   if (sounds)
@@ -1829,18 +1887,19 @@ void soundsToggle() {
   setParentOption();
 }
 
-void resetHighScore(){
+void resetHighScore() {
 
-  for(int i=0;i<3;i++){
-    highscore[i].score=0;
-    strcpy(highscore[i].playerName,"_____");
+  for (int i = 0; i < 3; i++) {
+    highscore[i].score = 0;
+    strcpy(highscore[i].playerName, "_____");
     writeHighScoreToEEPROM(highscore[i]);
   }
 
-  selectedOption=SETTINGS;
+  selectedOption = SETTINGS;
 }
 
 void alertLedToggle() {
+  // Toggle the state of alert LED and save the preference in EEPROM
   alertsLed = !alertsLed;
 
   EEPROM.put(alertsLedAddr, alertsLed);
@@ -1871,18 +1930,20 @@ void enterNameMenu() {
 
   }
 
+  // Handling input from joystick for name entry
   joystickDirection direction = joystickControl();
   if (direction == PRESS) {
-
+    // Save the name if it's not the default placeholder
     if (strcmp(pName, "_____") != 0) {
       strcpy(tempHighScore.playerName, pName);
       tempHighScore.score = 0;
 
+      // Save the name and reset score
       writeHighScoreToEEPROM(tempHighScore);
-
+      // Lock higher levels as a new player is entering their name
       EEPROM.put(level2LockedAddr, level2Locked = 1);
       EEPROM.put(level3LockedAddr, level3Locked = 1);
-      strcpy(pName, "_____");
+      strcpy(pName, "_____"); // Reset name to default
     }
     selectedOption = EXIT;
     printLock = false;
@@ -1946,7 +2007,6 @@ void enterNameMenu() {
 }
 
 void highScoreMenu() {
-  //byte options = sizeof(highScoreMessage) / sizeof(highScoreMessage[0]);
 
   if (!printLock) {
     lcd.clear();
@@ -2008,8 +2068,6 @@ void getEEPROMVals() {
   EEPROM.get(soundsAddr, sounds);
   EEPROM.get(alertsLedAddr, alertsLed);
 
-
-
   if (alertsLed)
     strcpy(alertLedMsg, "  AlertKey [ON] ");
   else
@@ -2038,11 +2096,11 @@ void matrixConfiguration() {
 }
 
 void menuSound() {
-
+  // Play different sounds based on the game state and interactions
   if (sounds == 1) {
 
     int sound;
-
+    // Determine which sound to play based on game state
     if (player -> futureComponent == POINT)
       sound = gotkeyFreq;
     else
